@@ -10,4 +10,15 @@ public class TaskService
   {
     return _tasks;
   }
+
+  public TaskItem Add(TaskItem task)
+  {
+    task.Id = _tasks.Count == 0
+        ? 1
+        : _tasks.Max(t => t.Id) + 1;
+
+    _tasks.Add(task);
+
+    return task;
+  }
 }
