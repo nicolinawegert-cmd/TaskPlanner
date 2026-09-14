@@ -39,4 +39,9 @@ public class TaskService
 
     return existingTask;
   }
+
+  public TaskItem? GetById(int id)
+  {
+    return _tasks.FirstOrDefault(t => t.Id == id);
+  }
 }

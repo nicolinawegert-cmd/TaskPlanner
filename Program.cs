@@ -58,4 +58,33 @@ app.MapPut("/api/tasks/{id:int}", (int id, TaskItem task, TaskService taskServic
     return Results.Ok(updatedTask);
 });
 
+app.MapPost("/api/tasks/{id:int}/file", async (int id, IFormFile file, TaskService taskService) =>
+{
+    var task = taskService.GetById(id);
+
+    if (task is null)
+    {
+        return Results.NotFound();
+    }
+
+    if (file.Length == 0)
+    {
+        return Results.BadRequest("File is empty.");
+    }
+
+    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+
+    Directory.CreateDirectory(uploadsFolder);
+
+    var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+    var filePath = Path.Combine(uploadsFolder, fileName);
+
+    await using var stream = new FileStream(filePath, FileMode.Create);
+    await file.CopyToAsync(stream);
+
+    task.FileName = fileName;
+
+    return Results.Ok(task);
+});
+
 app.Run();
