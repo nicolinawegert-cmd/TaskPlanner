@@ -21,4 +21,22 @@ public class TaskService
 
     return task;
   }
+
+  public TaskItem? Update(int id, TaskItem updatedTask)
+  {
+    var existingTask = _tasks.FirstOrDefault(t => t.Id == id);
+
+    if (existingTask is null)
+    {
+      return null;
+    }
+
+    existingTask.Title = updatedTask.Title;
+    existingTask.Description = updatedTask.Description;
+    existingTask.Status = updatedTask.Status;
+    existingTask.DueDate = updatedTask.DueDate;
+    existingTask.FileName = updatedTask.FileName;
+
+    return existingTask;
+  }
 }

@@ -29,4 +29,16 @@ app.MapPost("/api/tasks", (TaskItem task, TaskService taskService) =>
     return Results.Created($"/api/tasks/{createdTask.Id}", createdTask);
 });
 
+app.MapPut("/api/tasks/{id:int}", (int id, TaskItem task, TaskService taskService) =>
+{
+    var updatedTask = taskService.Update(id, task);
+
+    if (updatedTask is null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(updatedTask);
+});
+
 app.Run();
