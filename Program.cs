@@ -1,12 +1,17 @@
 using TaskPlanner.Api.Services;
 using TaskPlanner.Api.Models;
 using System.Text.Json.Serialization;
+using Microsoft.EntityFrameworkCore;
+using TaskPlanner.Api.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton<TaskService>();
+builder.Services.AddScoped<TaskService>();
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -24,31 +29,33 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Endpoints
-app.MapGet("/api/tasks", (TaskService taskService) =>
+app.MapGet("/api/tasks", async (TaskService taskService) =>
 {
-    return Results.Ok(taskService.GetAll());
+    var tasks = await taskService.GetAllAsync();
+
+    return Results.Ok(tasks);
 });
 
-app.MapPost("/api/tasks", (TaskItem task, TaskService taskService) =>
+app.MapPost("/api/tasks", async (TaskItem task, TaskService taskService) =>
 {
     if (string.IsNullOrWhiteSpace(task.Title))
     {
         return Results.BadRequest("Title is required.");
     }
 
-    var createdTask = taskService.Add(task);
+    var createdTask = await taskService.AddAsync(task);
 
     return Results.Created($"/api/tasks/{createdTask.Id}", createdTask);
 });
 
-app.MapPut("/api/tasks/{id:int}", (int id, TaskItem task, TaskService taskService) =>
+app.MapPut("/api/tasks/{id:int}", async (int id, TaskItem task, TaskService taskService) =>
 {
     if (string.IsNullOrWhiteSpace(task.Title))
     {
         return Results.BadRequest("Title is required.");
     }
 
-    var updatedTask = taskService.Update(id, task);
+    var updatedTask = await taskService.UpdateAsync(id, task);
 
     if (updatedTask is null)
     {
@@ -60,7 +67,7 @@ app.MapPut("/api/tasks/{id:int}", (int id, TaskItem task, TaskService taskServic
 
 app.MapPost("/api/tasks/{id:int}/file", async (int id, IFormFile file, TaskService taskService) =>
 {
-    var task = taskService.GetById(id);
+    var task = await taskService.GetByIdAsync(id);
 
     if (task is null)
     {
@@ -82,9 +89,9 @@ app.MapPost("/api/tasks/{id:int}/file", async (int id, IFormFile file, TaskServi
     await using var stream = new FileStream(filePath, FileMode.Create);
     await file.CopyToAsync(stream);
 
-    task.FileName = fileName;
+    var updatedTask = await taskService.UpdateFileAsync(task, fileName);
 
-    return Results.Ok(task);
+    return Results.Ok(updatedTask);
 });
 
 app.Run();

@@ -1,30 +1,40 @@
+using Microsoft.EntityFrameworkCore;
+using TaskPlanner.Api.Data;
 using TaskPlanner.Api.Models;
 
 namespace TaskPlanner.Api.Services;
 
 public class TaskService
 {
-  private readonly List<TaskItem> _tasks = new();
+  private readonly AppDbContext _context;
 
-  public IEnumerable<TaskItem> GetAll()
+  public TaskService(AppDbContext context)
   {
-    return _tasks;
+    _context = context;
   }
 
-  public TaskItem Add(TaskItem task)
+  public async Task<List<TaskItem>> GetAllAsync()
   {
-    task.Id = _tasks.Count == 0
-        ? 1
-        : _tasks.Max(t => t.Id) + 1;
+    return await _context.Tasks.ToListAsync();
+  }
 
-    _tasks.Add(task);
+  public async Task<TaskItem?> GetByIdAsync(int id)
+  {
+    return await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+  }
+
+  public async Task<TaskItem> AddAsync(TaskItem task)
+  {
+    _context.Tasks.Add(task);
+    await _context.SaveChangesAsync();
 
     return task;
   }
 
-  public TaskItem? Update(int id, TaskItem updatedTask)
+  public async Task<TaskItem?> UpdateAsync(int id, TaskItem updatedTask)
   {
-    var existingTask = _tasks.FirstOrDefault(t => t.Id == id);
+    var existingTask = await _context.Tasks
+        .FirstOrDefaultAsync(t => t.Id == id);
 
     if (existingTask is null)
     {
@@ -37,11 +47,16 @@ public class TaskService
     existingTask.DueDate = updatedTask.DueDate;
     existingTask.FileName = updatedTask.FileName;
 
+    await _context.SaveChangesAsync();
+
     return existingTask;
   }
 
-  public TaskItem? GetById(int id)
+  public async Task<TaskItem> UpdateFileAsync(TaskItem task, string fileName)
   {
-    return _tasks.FirstOrDefault(t => t.Id == id);
+    task.FileName = fileName;
+    await _context.SaveChangesAsync();
+
+    return task;
   }
 }
