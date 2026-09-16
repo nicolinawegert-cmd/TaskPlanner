@@ -1,5 +1,6 @@
 using TaskPlanner.Api.Services;
 using TaskPlanner.Api.Models;
+using Microsoft.Extensions.FileProviders;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using TaskPlanner.Api.Data;
@@ -39,6 +40,15 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "Uploads")),
+    RequestPath = "/uploads"
+});
 
 // Endpoints
 app.MapGet("/api/tasks", async (TaskService taskService) =>
@@ -92,7 +102,6 @@ app.MapPost("/api/tasks/{id:int}/file", async (int id, IFormFile file, TaskServi
     }
 
     var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
-
     Directory.CreateDirectory(uploadsFolder);
 
     var fileName = $"{Guid.NewGuid()}_{file.FileName}";
@@ -104,6 +113,7 @@ app.MapPost("/api/tasks/{id:int}/file", async (int id, IFormFile file, TaskServi
     var updatedTask = await taskService.UpdateFileAsync(task, fileName);
 
     return Results.Ok(updatedTask);
-});
+})
+.DisableAntiforgery();
 
 app.Run();
