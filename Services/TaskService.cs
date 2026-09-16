@@ -45,7 +45,6 @@ public class TaskService
     existingTask.Description = updatedTask.Description;
     existingTask.Status = updatedTask.Status;
     existingTask.DueDate = updatedTask.DueDate;
-    existingTask.FileName = updatedTask.FileName;
 
     await _context.SaveChangesAsync();
 
