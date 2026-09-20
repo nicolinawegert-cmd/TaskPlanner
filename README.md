@@ -34,12 +34,12 @@ Kör sedan i projektmappen:
 ```sh
 dotnet restore
 dotnet ef database update
-dotnet run --launch-profile http
+dotnet run
 ```
 
 - `dotnet restore` installerar projektets paket.
 - `dotnet ef database update` skapar databasen och dess tabeller.
-- `dotnet run --launch-profile http` startar API:t på port `5035`.
+- `dotnet run` startar API:t på port `5035`.
 
 Databasen följer inte med när repot klonas, så databassteget behövs vid första
 starten. Filerna i `Migrations/` beskriver vilka tabeller som ska skapas.
@@ -48,7 +48,7 @@ starten. Filerna i `Migrations/` beskriver vilka tabeller som ska skapas.
 för att kontrollera att API:t fungerar. En ny databas är tom och ger svaret `[]`.
 
 Stoppa API:t med `Ctrl+C`. Vid nästa start räcker
-`dotnet run --launch-profile http` i projektmappen.
+`dotnet run` i projektmappen.
 Låt API:t vara igång när du använder webbappen.
 
 ## Endpoints
@@ -97,4 +97,3 @@ tas bort, ligger den gamla filen fortfarande kvar på disk.
 
 API:t har testats för att lista, skapa, uppdatera och ta bort uppgifter samt
 ladda upp och hämta filer. Även saknade uppgifter och ogiltig titel har kontrollerats.
-
