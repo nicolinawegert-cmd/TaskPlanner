@@ -54,6 +54,19 @@ public class TaskController : ControllerBase
         return Ok(updatedTask);
     }
 
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var deleted = await _taskService.DeleteAsync(id);
+
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
+
     [HttpPost("{id:int}/file")]
     public async Task<IActionResult> UploadFile(int id, IFormFile file)
     {

@@ -51,6 +51,21 @@ public class TaskService
     return existingTask;
   }
 
+  public async Task<bool> DeleteAsync(int id)
+  {
+    var task = await GetByIdAsync(id);
+
+    if (task is null)
+    {
+      return false;
+    }
+
+    _context.Tasks.Remove(task);
+    await _context.SaveChangesAsync();
+
+    return true;
+  }
+
   public async Task<TaskItem> UpdateFileAsync(TaskItem task, string fileName)
   {
     task.FileName = fileName;
